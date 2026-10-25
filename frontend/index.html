@@ -224,10 +224,23 @@
             <button id="btnClearChat" class="btn-small btn-danger-outline">Borrar chat</button>
           </div>
           <div id="chatMessages" class="chat-messages"></div>
-          <div class="chat-input-row">
-            <input type="text" id="chatInput" placeholder="Escribí un mensaje..." maxlength="2000">
-            <button id="btnSendChat" class="btn-primary">Enviar</button>
+          <div class="chat-tools" aria-label="Herramientas de mensaje">
+            <button type="button" class="tool-btn" data-format="bold" title="Negrita"><strong>B</strong></button>
+            <button type="button" class="tool-btn" data-format="italic" title="Cursiva"><em>I</em></button>
+            <button type="button" class="tool-btn" data-format="strike" title="Tachado"><s>S</s></button>
+            <button type="button" class="tool-btn" data-format="code" title="Código">&lt;/&gt;</button>
+            <button type="button" id="btnLinkChat" class="tool-btn" title="Enlace con texto visible">↗ Enlace</button>
+            <button type="button" id="btnImageChat" class="tool-btn" title="Subir imagen">▧ Imagen</button>
+            <button type="button" id="btnGifChat" class="tool-btn" title="Elegir GIF">GIF</button>
+            <button type="button" id="btnStickerChat" class="tool-btn" title="Elegir sticker">☺ Sticker</button>
+            <input type="file" id="chatImageFile" accept="image/png,image/jpeg,image/webp,image/gif" hidden>
           </div>
+          <div id="chatPicker" class="chat-picker hidden"></div>
+          <div class="chat-input-row">
+            <textarea id="chatInput" rows="2" placeholder="Escribí un mensaje…" maxlength="2000"></textarea>
+            <button id="btnSendChat" class="btn-primary">Enviar ↗</button>
+          </div>
+          <p class="chat-hint">Enter para enviar · Shift + Enter para nueva línea · Formato Markdown</p>
         </div>
 
       </div>

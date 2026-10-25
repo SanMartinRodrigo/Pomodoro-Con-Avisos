@@ -476,3 +476,35 @@ input:checked + .slider::before { transform: translateX(18px); }
   .topbar { padding: 0.8rem 1rem; }
   .main-content { padding: 1rem; }
 }
+
+/* Portfolio 2026 · lenguaje visual minimalista, adaptable a móvil y escritorio */
+:root { --bg:#f8fafc;--bg-panel:#ffffff;--bg-elevated:#f8fafc;--text:#182333;--text-muted:#768296;--border:#e7ebf0;--accent:#4361ee;--accent-hover:#3450d5;--radius:14px; }
+[data-theme="dark"] { --bg:#10151e;--bg-panel:#171e29;--bg-elevated:#1d2634;--text:#edf2f8;--text-muted:#a1aec0;--border:#303b4c;--accent:#88a0ff;--accent-hover:#6986ff; }
+body { font-family:Inter,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;letter-spacing:-.012em; }
+.panel,.login-box,.analytics-card { border:1px solid var(--border);border-radius:18px;box-shadow:0 5px 28px rgba(13,29,57,.035); }
+button { transition:background .15s ease,transform .15s ease; }
+button:active { transform:scale(.98); }
+.chat-messages { min-height:300px;max-height:480px;background:var(--bg-elevated);border-radius:14px;padding:16px;gap:12px; }
+.chat-msg {border-radius:15px;max-width:88%;padding:11px 14px;box-shadow:0 2px 12px rgba(0,0,0,.025);}
+.chat-msg-author {font-size:12px;letter-spacing:.02em;}
+.chat-msg-text {overflow-wrap:anywhere;line-height:1.5;margin-top:6px;white-space:normal;}
+.chat-msg-text a { color:var(--accent);text-decoration:underline;text-underline-offset:3px; }
+.chat-msg-text code {background:var(--bg-elevated);padding:2px 5px;border-radius:5px;}
+.chat-media {max-width:100%;width:auto;max-height:240px;object-fit:contain;border-radius:12px;display:block;margin-top:6px;}
+.chat-tools {display:flex;align-items:center;flex-wrap:wrap;gap:5px;margin:3px 0 8px;}
+.tool-btn {background:transparent;color:var(--text-muted);border:1px solid transparent;padding:7px 10px;border-radius:9px;font-size:13px;white-space:nowrap;}
+.tool-btn:hover,.tool-btn:focus-visible {background:var(--bg-elevated);border-color:var(--border);color:var(--text);}
+.chat-input-row {align-items:stretch;}
+.chat-input-row textarea {resize:vertical;min-height:54px;max-height:155px;margin:0;border-radius:12px;padding:11px 12px;}
+.chat-input-row button {padding:0 16px;}
+.chat-hint {font-size:11px;color:var(--text-muted);margin:7px 0 0;}
+.chat-picker {padding:12px;margin-bottom:10px;border:1px solid var(--border);border-radius:13px;background:var(--bg-panel);}
+.chat-picker p {font-size:12px;color:var(--text-muted);margin:0 0 10px;}
+.chat-picker p:last-child {margin:10px 0 0;}
+.chat-picker-grid {display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;}
+.chat-picker-grid button {border:1px solid var(--border);background:var(--bg-elevated);padding:4px;height:92px;overflow:hidden;}
+.chat-picker-grid img {height:100%;width:100%;object-fit:cover;border-radius:8px;}
+.chat-sticker-grid {display:grid;grid-template-columns:repeat(8,minmax(0,1fr));gap:5px;}
+.chat-sticker-grid button {font-size:25px;background:transparent;padding:7px 2px;}
+.chat-sticker-grid button:hover {background:var(--bg-elevated);}
+@media(max-width:640px) { .chat-sticker-grid {grid-template-columns:repeat(4,1fr)} .chat-picker-grid {grid-template-columns:repeat(2,1fr)} .chat-tools {gap:1px} .tool-btn{padding:7px} }

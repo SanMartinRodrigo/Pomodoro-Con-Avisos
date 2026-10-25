@@ -889,12 +889,111 @@ function appendChatMessage(msg) {
   const time = new Date(msg.created_at).toLocaleTimeString("es-AR", { hour: "2-digit", minute: "2-digit" });
   div.innerHTML = `
     <div class="chat-msg-author">${escapeHtml(msg.author)}</div>
-    <div class="chat-msg-text">${escapeHtml(msg.message)}</div>
+    <div class="chat-msg-text">${renderRichChat(msg.message)}</div>
     <div class="chat-msg-time">${time}</div>
   `;
   container.appendChild(div);
   container.scrollTop = container.scrollHeight;
 }
+
+// Renderer seguro: todo contenido se escapa ANTES de insertar marcado permitido.
+function safeChatUrl(url) {
+  try {
+    const u = new URL(url, location.href);
+    return ["http:", "https:"].includes(u.protocol) ? u.href : null;
+  } catch { return null; }
+}
+function renderRichChat(input) {
+  const raw = String(input || "").slice(0, 2000);
+  const placeholders = [];
+  const mark = html => { placeholders.push(html); return `\uE000${placeholders.length - 1}\uE001`; };
+  let text = raw.replace(/!\[([^\]]*)\]\(([^)\s]+)\)/g, (all, alt, url) => {
+    const safe = safeChatUrl(url);
+    if (!safe || (!safe.startsWith(location.origin + "/uploads/") && !/^https:\/\/(media[0-9]*\.giphy\.com|i\.giphy\.com|media\.tenor\.com)\//i.test(safe))) return all;
+    return mark(`<img class="chat-media" loading="lazy" alt="${escapeHtml(alt)}" src="${escapeHtml(safe)}">`);
+  });
+  text = text.replace(/\[([^\]\n]{1,100})\]\(([^)\s]+)\)/g, (all, title, url) => {
+    const safe = safeChatUrl(url);
+    return safe ? mark(`<a href="${escapeHtml(safe)}" target="_blank" rel="noopener noreferrer">${escapeHtml(title)}</a>`) : all;
+  });
+  text = escapeHtml(text);
+  text = text.replace(/`([^`\n]+)`/g, '<code>$1</code>')
+    .replace(/\*\*([^*\n]+)\*\*/g, '<strong>$1</strong>')
+    .replace(/\*([^*\n]+)\*/g, '<em>$1</em>')
+    .replace(/~~([^~\n]+)~~/g, '<s>$1</s>')
+    .replace(/\n/g, '<br>');
+  return text.replace(/\uE000(\d+)\uE001/g, (_, i) => placeholders[Number(i)] || '');
+}
+function insertChatText(value) {
+  const el = document.getElementById("chatInput");
+  const a = el.selectionStart, b = el.selectionEnd;
+  el.value = el.value.slice(0, a) + value + el.value.slice(b);
+  el.focus(); el.setSelectionRange(a + value.length, a + value.length);
+}
+function wrapChatSelection(prefix, suffix = prefix, example = "texto") {
+  const el = document.getElementById("chatInput");
+  const a = el.selectionStart, b = el.selectionEnd;
+  const content = el.value.slice(a, b) || example;
+  el.setRangeText(prefix + content + suffix, a, b, "select"); el.focus();
+}
+document.querySelectorAll("[data-format]").forEach(btn => btn.addEventListener("click", () => {
+  const f = btn.dataset.format;
+  if (f === 'bold') wrapChatSelection('**');
+  if (f === 'italic') wrapChatSelection('*');
+  if (f === 'strike') wrapChatSelection('~~');
+  if (f === 'code') wrapChatSelection('`');
+}));
+document.getElementById("btnLinkChat").addEventListener("click", () => {
+  const label = prompt("Texto que se mostrará en el chat:", document.getElementById('chatInput').value.slice(document.getElementById('chatInput').selectionStart, document.getElementById('chatInput').selectionEnd) || 'Abrir enlace');
+  if (label === null) return;
+  const url = prompt("Dirección del enlace (https://...):", "https://");
+  if (!url) return;
+  const safe = safeChatUrl(url);
+  if (!safe) return alert("Ingresá una URL http o https válida.");
+  insertChatText(`[${label.replace(/[\]\n]/g, '')}](${safe})`);
+});
+document.getElementById("btnImageChat").addEventListener("click", () => document.getElementById("chatImageFile").click());
+document.getElementById("chatImageFile").addEventListener("change", async event => {
+  const file = event.target.files[0]; if (!file) return;
+  const data = new FormData(); data.append("file", file);
+  try {
+    const res = await fetch('/api/chat/upload', {method: 'POST', body: data});
+    if (!res.ok) throw new Error((await res.json()).detail || 'No se pudo subir la imagen');
+    const body = await res.json();
+    insertChatText(`![Imagen](${body.url})`);
+  } catch (err) { alert(err.message); }
+  event.target.value = '';
+});
+const CHAT_GIFS = [
+  ['Celebración','https://media.giphy.com/media/g9582DNuQppxC/giphy.gif'],
+  ['Bien hecho','https://media.giphy.com/media/111ebonMs90YLu/giphy.gif'],
+  ['Aplausos','https://media.giphy.com/media/nbvFVPiEiJH6JOGIok/giphy.gif'],
+  ['Concentración','https://media.giphy.com/media/l0HlBO7eyXzSZkJri/giphy.gif'],
+  ['Vamos','https://media.giphy.com/media/12XDYvMJNcmLgQ/giphy.gif'],
+  ['Excelente','https://media.giphy.com/media/26BRv0ThflsHCqDrG/giphy.gif']
+];
+const CHAT_STICKERS = ['👏','🔥','🎯','🧠','🍅','💪','✨','🚀','☕','💯','🎉','❤️','😎','🙌','✅','🌟'];
+function toggleChatPicker(kind) {
+  const picker = document.getElementById('chatPicker');
+  if (!picker.classList.contains('hidden') && picker.dataset.kind === kind) { picker.classList.add('hidden'); return; }
+  picker.dataset.kind = kind; picker.replaceChildren();
+  if (kind === 'gif') {
+    const title = document.createElement('p'); title.textContent = 'GIFs · tocá para insertar'; picker.append(title);
+    const grid = document.createElement('div'); grid.className = 'chat-picker-grid';
+    CHAT_GIFS.forEach(([label, url]) => {
+      const btn = document.createElement('button'); btn.type = 'button'; btn.title = label;
+      const img = document.createElement('img'); img.src = url; img.alt = label; img.loading = 'lazy'; btn.append(img);
+      btn.addEventListener('click', () => { insertChatText(`![${label}](${url})`); picker.classList.add('hidden'); }); grid.append(btn);
+    }); picker.append(grid);
+    const hint = document.createElement('p'); hint.textContent = 'También podés pegar la URL directa de un GIF de GIPHY o Tenor usando el formato ![GIF](https://...)'; picker.append(hint);
+  } else {
+    const grid = document.createElement('div'); grid.className = 'chat-sticker-grid';
+    CHAT_STICKERS.forEach(sticker => { const btn = document.createElement('button'); btn.type = 'button'; btn.textContent = sticker; btn.addEventListener('click', () => { insertChatText(sticker); picker.classList.add('hidden'); }); grid.append(btn); }); picker.append(grid);
+  }
+  picker.classList.remove('hidden');
+}
+document.getElementById('btnGifChat').addEventListener('click', () => toggleChatPicker('gif'));
+document.getElementById('btnStickerChat').addEventListener('click', () => toggleChatPicker('sticker'));
 
 function sendChat() {
   const input = document.getElementById("chatInput");
@@ -907,7 +1006,7 @@ function sendChat() {
 
 document.getElementById("btnSendChat").addEventListener("click", sendChat);
 document.getElementById("chatInput").addEventListener("keydown", (e) => {
-  if (e.key === "Enter") sendChat();
+  if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); sendChat(); }
 });
 
 document.getElementById("btnClearChat").addEventListener("click", () => {

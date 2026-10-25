@@ -59,3 +59,14 @@ run.sh            Inicio local en Linux/macOS
 ## Limitaciones y seguridad
 
 Este repositorio es una **demostración de desarrollo**, no una aplicación segura para alojar en Internet en su estado actual. El ingreso de administrador usa una contraseña fija en el código y las rutas de modificación no verifican una sesión autenticada: la distinción entre administrador e invitado en la interfaz **no protege la API**. También debe revisarse la política CORS y el acceso al chat antes de un despliegue público. Ejecutar exclusivamente en una máquina de confianza mediante `127.0.0.1`.
+
+
+## Chat enriquecido (versión portfolio)
+
+- Texto en **negrita**, *cursiva*, ~~tachado~~ y `código`, mediante botones o Markdown.
+- Enlaces con texto legible usando `[nombre](https://ejemplo.com)`.
+- Imágenes PNG/JPG/WebP y GIF subidas desde el chat (máximo 5 MB). Se guardan en `uploads/`, que debe mantenerse fuera de Git.
+- Selector de GIFs predefinidos (requiere acceso a GIPHY en Internet) y stickers emoji.
+- Tecla **Enter** envía; **Shift + Enter** agrega una nueva línea.
+
+**Nota de seguridad:** el acceso de administrador existente usa una contraseña fija y no hay autenticación segura en WebSocket, carga de imágenes o borrado del chat. Esta versión está destinada a uso local/en red de confianza, no a Internet pública. El sistema permite contenido compartido por todos los invitados: evitá subir datos sensibles.

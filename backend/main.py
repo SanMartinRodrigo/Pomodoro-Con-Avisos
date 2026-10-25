@@ -3,10 +3,11 @@ App de Pomodoro / Anti-Pomodoro con modo invitados.
 Backend FastAPI + SQLite. Sirve también el frontend estático.
 """
 from datetime import datetime, timedelta
+import secrets
 from pathlib import Path
 from typing import Optional, List
 
-from fastapi import FastAPI, HTTPException, WebSocket, WebSocketDisconnect
+from fastapi import FastAPI, HTTPException, WebSocket, WebSocketDisconnect, UploadFile, File
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
@@ -429,6 +430,33 @@ class ChatManager:
 chat_manager = ChatManager()
 
 
+UPLOAD_DIR = Path(__file__).resolve().parent.parent / "uploads"
+UPLOAD_DIR.mkdir(parents=True, exist_ok=True)
+MAX_IMAGE_BYTES = 5 * 1024 * 1024
+IMAGE_TYPES = {"image/png": ".png", "image/jpeg": ".jpg", "image/webp": ".webp", "image/gif": ".gif"}
+
+
+@app.post("/api/chat/upload")
+async def upload_chat_image(file: UploadFile = File(...)):
+    # Límite estricto de tamaño y validación básica de firma real.
+    if file.content_type not in IMAGE_TYPES:
+        raise HTTPException(400, "Solo se admiten PNG, JPG, WebP o GIF.")
+    data = await file.read(MAX_IMAGE_BYTES + 1)
+    if len(data) > MAX_IMAGE_BYTES:
+        raise HTTPException(413, "La imagen no puede superar los 5 MB.")
+    signatures = {
+        "image/png": data.startswith(b"\x89PNG\r\n\x1a\n"),
+        "image/jpeg": data.startswith(b"\xff\xd8\xff"),
+        "image/webp": data.startswith(b"RIFF") and data[8:12] == b"WEBP",
+        "image/gif": data.startswith((b"GIF87a", b"GIF89a")),
+    }
+    if not signatures[file.content_type]:
+        raise HTTPException(400, "El contenido no coincide con un archivo de imagen válido.")
+    filename = secrets.token_hex(16) + IMAGE_TYPES[file.content_type]
+    (UPLOAD_DIR / filename).write_bytes(data)
+    return {"url": "/uploads/" + filename}
+
+
 @app.get("/api/chat")
 def get_chat_history():
     with get_db() as db:
@@ -507,6 +535,7 @@ def health_thresholds():
 # ---------------------------------------------------------------------------
 # Servir el frontend
 # ---------------------------------------------------------------------------
+app.mount("/uploads", StaticFiles(directory=str(UPLOAD_DIR)), name="uploads")
 app.mount("/static", StaticFiles(directory=str(FRONTEND_DIR)), name="static")
 
 
