@@ -59,16 +59,3 @@ run.sh            Inicio local en Linux/macOS
 ## Limitaciones y seguridad
 
 Este repositorio es una **demostración de desarrollo**, no una aplicación segura para alojar en Internet en su estado actual. El ingreso de administrador usa una contraseña fija en el código y las rutas de modificación no verifican una sesión autenticada: la distinción entre administrador e invitado en la interfaz **no protege la API**. También debe revisarse la política CORS y el acceso al chat antes de un despliegue público. Ejecutar exclusivamente en una máquina de confianza mediante `127.0.0.1`.
-
-No se incluyen bases de datos personales ni credenciales privadas.
-
-## Próximos pasos
-
-- [ ] Incorporar capturas de pantalla reales.
-- [ ] Agregar pruebas automatizadas.
-- [ ] Implementar autenticación y autorización seguras.
-- [ ] Preparar una demostración online cuando se complete la revisión de seguridad.
-
-## Autoría
-
-Proyecto personal. Los datos de autoría y el enlace a LinkedIn pueden agregarse cuando se publique el repositorio.
