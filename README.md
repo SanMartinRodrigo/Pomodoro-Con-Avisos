@@ -14,18 +14,6 @@
 - **Recordatorios:** recibir avisos de hidratación, postura y pausas activas.
 - **Preferencias:** alternar tema claro y oscuro.
 
-## Vista previa
-
-Las capturas se incorporarán después de ejecutar la aplicación con datos de demostración.
-
-| Pantalla | Captura |
-| --- | --- |
-| Inicio | [Ver captura cuando esté disponible](docs/screenshots/inicio.png) |
-| Pomodoro | [Ver captura cuando esté disponible](docs/screenshots/pomodoro.png) |
-| Anti-Pomodoro | [Ver captura cuando esté disponible](docs/screenshots/anti-pomodoro.png) |
-| Estadísticas | [Ver captura cuando esté disponible](docs/screenshots/estadisticas.png) |
-| Sesión compartida | [Ver captura cuando esté disponible](docs/screenshots/colaborativo.png) |
-
 ## Tecnologías
 
 **Backend:** Python, FastAPI, SQLite y WebSockets.  
