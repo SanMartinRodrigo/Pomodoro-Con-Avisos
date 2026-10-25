@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Pomodoro / Anti-Pomodoro</title>
+<link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+
+<!-- ===================== LOGIN ===================== -->
+<div id="loginScreen" class="login-screen">
+  <div class="login-box">
+    <h1>⏱️ Pomodoro / Anti-Pomodoro</h1>
+    <div class="login-tabs">
+      <button class="login-tab active" data-tab="admin">Admin</button>
+      <button class="login-tab" data-tab="guest">Invitado</button>
+    </div>
+
+    <div id="loginAdmin" class="login-panel active">
+      <label>Clave de acceso</label>
+      <input type="password" id="adminPassword" placeholder="••••" maxlength="10">
+      <button id="btnLoginAdmin" class="btn-primary">Entrar</button>
+      <p id="adminError" class="error-text"></p>
+    </div>
+
+    <div id="loginGuest" class="login-panel">
+      <label>Tu nombre</label>
+      <input type="text" id="guestName" placeholder="¿Cómo te llamás?" maxlength="40">
+      <button id="btnLoginGuest" class="btn-primary">Entrar como invitado</button>
+      <p id="guestError" class="error-text"></p>
+    </div>
+  </div>
+</div>
+
+<!-- ===================== APP ===================== -->
+<div id="app" class="app hidden">
+
+  <header class="topbar">
+    <div class="topbar-left">
+      <span class="brand">⏱️ Pomodoro</span>
+      <span id="userBadge" class="user-badge"></span>
+    </div>
+
+    <nav id="mainTabs" class="main-tabs">
+      <button class="tab-btn active" data-view="pomodoro">Pomodoro</button>
+      <button class="tab-btn" data-view="anti">Anti-Pomodoro</button>
+      <button class="tab-btn" data-view="guests">Invitados</button>
+      <button class="tab-btn" data-view="analytics">Análisis</button>
+    </nav>
+
+    <div class="topbar-right">
+      <button id="btnTheme" class="icon-btn" title="Modo nocturno/claro">🌙</button>
+      <button id="btnLogout" class="icon-btn" title="Salir">⏻</button>
+    </div>
+  </header>
+
+  <!-- Banner de salud (no invasivo) -->
+  <div id="healthBanner" class="health-banner hidden">
+    <span id="healthBannerText"></span>
+    <button id="healthBannerDismiss" class="health-dismiss">✕</button>
+  </div>
+
+  <main class="main-content">
+
+    <!-- ============ VISTA POMODORO ============ -->
+    <section id="view-pomodoro" class="view active">
+      <div class="layout-split">
+
+        <div class="panel panel-goals">
+          <div class="panel-header">
+            <h2>Metas de estudio</h2>
+            <button id="btnNewGoalPomodoro" class="btn-small">+ Nueva meta</button>
+          </div>
+          <div id="goalListPomodoro" class="goal-list"></div>
+        </div>
+
+        <div class="panel panel-timer">
+          <div id="noGoalSelectedPomodoro" class="empty-state">
+            <p>Seleccioná o creá una meta para empezar a estudiar.</p>
+          </div>
+
+          <div id="pomodoroActive" class="timer-active hidden">
+            <div class="active-goal-title" id="activeGoalTitlePomodoro"></div>
+            <div class="goal-next-step" id="activeGoalNextStepPomodoro"></div>
+
+            <div class="pomodoro-phase" id="pomodoroPhase">Estudio</div>
+            <div class="timer-display" id="pomodoroDisplay">25:00</div>
+            <div class="pomodoro-cycles" id="pomodoroCycles">Pomodoro 1 de 4</div>
+
+            <div class="timer-controls">
+              <button id="btnPomodoroStart" class="btn-primary btn-large">▶ Iniciar</button>
+              <button id="btnPomodoroPause" class="btn-secondary btn-large hidden">⏸ Pausar</button>
+              <button id="btnPomodoroStop" class="btn-danger btn-large">⏹ Detener</button>
+            </div>
+
+            <div class="pomodoro-config">
+              <label>Estudio (min) <input type="number" id="cfgStudyMin" min="1" max="180"></label>
+              <label>Descanso (min) <input type="number" id="cfgBreakMin" min="1" max="60"></label>
+              <label>Descanso largo (min) <input type="number" id="cfgLongBreakMin" min="1" max="90"></label>
+              <label>Ciclos hasta descanso largo <input type="number" id="cfgCycles" min="1" max="12"></label>
+              <button id="btnSaveTimerConfig" class="btn-small">Guardar config</button>
+            </div>
+
+            <div class="next-step-editor">
+              <label>Próximo paso (qué seguir la próxima vez)</label>
+              <textarea id="nextStepPomodoro" rows="3" placeholder="Ej: terminar el capítulo 4 y hacer los ejercicios 1-10..."></textarea>
+              <button id="btnSaveNextStepPomodoro" class="btn-small">Guardar</button>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- ============ VISTA ANTI-POMODORO ============ -->
+    <section id="view-anti" class="view">
+      <div class="layout-split">
+
+        <div class="panel panel-goals">
+          <div class="panel-header">
+            <h2>Metas (cronómetro libre)</h2>
+            <button id="btnNewGoalAnti" class="btn-small">+ Nueva meta</button>
+          </div>
+          <div id="goalListAnti" class="goal-list"></div>
+        </div>
+
+        <div class="panel panel-timer">
+          <div id="noGoalSelectedAnti" class="empty-state">
+            <p>Seleccioná o creá una meta para iniciar el cronómetro.</p>
+          </div>
+
+          <div id="antiActive" class="timer-active hidden">
+            <div class="active-goal-title" id="activeGoalTitleAnti"></div>
+            <div class="goal-next-step" id="activeGoalNextStepAnti"></div>
+
+            <div class="timer-display" id="antiDisplay">00:00:00</div>
+            <div class="anti-pause-indicator hidden" id="antiPauseIndicator">⏸ En pausa — tiempo pausado: <span id="antiPausedTime">00:00:00</span></div>
+
+            <div class="timer-controls">
+              <button id="btnAntiStart" class="btn-primary btn-large">▶ Iniciar</button>
+              <button id="btnAntiPause" class="btn-secondary btn-large hidden">⏸ Pausar</button>
+              <button id="btnAntiResume" class="btn-secondary btn-large hidden">▶ Reanudar</button>
+              <button id="btnAntiStop" class="btn-danger btn-large">⏹ Detener</button>
+            </div>
+
+            <div class="anti-counters">
+              <div class="counter-box collapsible">
+                <div class="counter-box-header" data-target="totalTimeBox">
+                  <span>Tiempo total de esta meta</span>
+                  <span class="collapse-arrow">▾</span>
+                </div>
+                <div id="totalTimeBox" class="counter-box-body">
+                  <span id="antiTotalTime">00:00:00</span>
+                </div>
+              </div>
+
+              <div class="counter-box">
+                <div class="counter-box-header">
+                  <span>Sesión del día (opcional)</span>
+                  <label class="switch">
+                    <input type="checkbox" id="toggleDaySession">
+                    <span class="slider"></span>
+                  </label>
+                </div>
+                <div id="daySessionBody" class="counter-box-body hidden">
+                  <span id="antiDaySessionTime">00:00:00</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="next-step-editor">
+              <label>Próximo paso (qué seguir la próxima vez)</label>
+              <textarea id="nextStepAnti" rows="3" placeholder="Ej: terminar el capítulo 4 y hacer los ejercicios 1-10..."></textarea>
+              <button id="btnSaveNextStepAnti" class="btn-small">Guardar</button>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- ============ VISTA INVITADOS ============ -->
+    <section id="view-guests" class="view">
+      <div class="layout-split guests-layout">
+
+        <div class="panel panel-timer">
+          <h2>Pomodoro compartido con invitados</h2>
+
+          <div class="guest-setup" id="guestSetup">
+            <label>Meta destino</label>
+            <select id="guestGoalSelect">
+              <option value="">— Tiempo compartido genérico —</option>
+            </select>
+
+            <label>Etiqueta (si es genérico)</label>
+            <select id="guestTagSelect"></select>
+
+            <label class="checkbox-row">
+              <input type="checkbox" id="guestCountsToggle" checked>
+              ¿Sumar este tiempo al total / estadísticas?
+            </label>
+
+            <label>Minutos de estudio</label>
+            <input type="number" id="guestStudyMin" value="25" min="1" max="180">
+            <label>Minutos de descanso</label>
+            <input type="number" id="guestBreakMin" value="5" min="1" max="60">
+          </div>
+
+          <div id="guestActive" class="timer-active hidden">
+            <div class="pomodoro-phase" id="guestPhase">Estudio</div>
+            <div class="timer-display" id="guestDisplay">25:00</div>
+            <div class="timer-controls">
+              <button id="btnGuestStart" class="btn-primary btn-large">▶ Iniciar</button>
+              <button id="btnGuestPause" class="btn-secondary btn-large hidden">⏸ Pausar</button>
+              <button id="btnGuestStop" class="btn-danger btn-large">⏹ Detener</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="panel panel-chat">
+          <div class="panel-header">
+            <h2>Chat de la sesión</h2>
+            <button id="btnClearChat" class="btn-small btn-danger-outline">Borrar chat</button>
+          </div>
+          <div id="chatMessages" class="chat-messages"></div>
+          <div class="chat-input-row">
+            <input type="text" id="chatInput" placeholder="Escribí un mensaje..." maxlength="2000">
+            <button id="btnSendChat" class="btn-primary">Enviar</button>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- ============ VISTA ANÁLISIS ============ -->
+    <section id="view-analytics" class="view">
+      <div class="panel panel-analytics">
+        <h2>Análisis de tiempo por etiqueta</h2>
+        <p class="analytics-sub">Tiempo total acumulado por etiqueta, y hace cuánto no sumás tiempo en cada una.</p>
+        <div id="tagLegend" class="tag-legend"></div>
+        <div id="analyticsByTag" class="analytics-grid"></div>
+
+        <h2 style="margin-top:2rem">Análisis por meta</h2>
+        <div id="analyticsByGoal" class="analytics-grid"></div>
+
+        <h2 style="margin-top:2rem">Gestión de etiquetas</h2>
+        <div class="tag-manager">
+          <input type="text" id="newTagName" placeholder="Nombre de etiqueta">
+          <input type="color" id="newTagColor" value="#3b82f6">
+          <button id="btnAddTag" class="btn-small">+ Agregar etiqueta</button>
+        </div>
+        <div id="tagManagerList" class="tag-manager-list"></div>
+      </div>
+    </section>
+
+  </main>
+</div>
+
+<!-- ===================== MODAL NUEVA META ===================== -->
+<div id="goalModal" class="modal hidden">
+  <div class="modal-box">
+    <h2 id="goalModalTitle">Nueva meta</h2>
+    <label>Título de la meta</label>
+    <input type="text" id="newGoalTitle" placeholder="Ej: Meta: Estudio de Inglés">
+
+    <label>Etiquetas</label>
+    <div id="newGoalTags" class="tag-picker"></div>
+
+    <div id="goalModalPomodoroFields">
+      <label>Minutos de estudio</label>
+      <input type="number" id="newGoalStudyMin" value="25" min="1" max="180">
+      <label>Minutos de descanso</label>
+      <input type="number" id="newGoalBreakMin" value="5" min="1" max="60">
+      <label>Minutos de descanso largo</label>
+      <input type="number" id="newGoalLongBreakMin" value="20" min="1" max="90">
+      <label>Ciclos hasta descanso largo</label>
+      <input type="number" id="newGoalCycles" value="4" min="1" max="12">
+    </div>
+
+    <label>Próximo paso (opcional)</label>
+    <textarea id="newGoalNextStep" rows="2" placeholder="¿Con qué seguir la próxima vez?"></textarea>
+
+    <div class="modal-actions">
+      <button id="btnCancelGoal" class="btn-secondary">Cancelar</button>
+      <button id="btnConfirmGoal" class="btn-primary">Crear</button>
+    </div>
+  </div>
+</div>
+
+<script src="/static/app.js"></script>
+</body>
+</html>
